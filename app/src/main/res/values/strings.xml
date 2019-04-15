@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Weary</string>
+    <string name="contact">Contact</string>
+    <string name="medivac">Medivac</string>
+    <string name="pickup">Pickup</string>
+    <string name="gps_off">GPS Off</string>
+    <string name="gps_on">GPS ON</string>
+    <string name="gps">GPS</string>
+    <string name="on_location">On Location</string>
+    <string name="todo">TODO</string>
+</resources>
