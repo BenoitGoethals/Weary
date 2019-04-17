@@ -14,9 +14,14 @@ import android.os.StrictMode
 import android.provider.Settings
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.Button
+import android.widget.ImageButton
 import android.widget.Toast
 import kotlinx.android.synthetic.main.activity_main.*
 import java.util.*
+
+
+
 private const val PERMISSION_REQUEST = 10
 class MainActivity : AppCompatActivity() {
 
@@ -26,7 +31,19 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        val intent = Intent(this, GpSIntentService::class.java)
+
+        StrictMode.setThreadPolicy(
+            StrictMode.ThreadPolicy.Builder().permitAll().build())
+
+
+        val spotRportBut:ImageButton =findViewById(R.id.imageButtonReport)
+        spotRportBut.setOnClickListener {
+            val intent:Intent=Intent(this,SpotReportActivity::class.java)
+            startActivity(intent)
+        }
+
+
+        val intent = Intent(this, GpsIntentService::class.java)
         startService(intent)
 
 

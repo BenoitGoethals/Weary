@@ -11,6 +11,7 @@ import android.location.LocationManager
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
+import java.lang.Exception
 import java.util.*
 
 // TODO: Rename actions, choose action names that describe tasks that this
@@ -28,12 +29,15 @@ private const val EXTRA_PARAM2 = "be.mil.weary.extra.PARAM2"
  * TODO: Customize class - update intent actions, extra parameters and static
  * helper methods.
  */
-class GpSIntentService : IntentService("GpSIntentService") {
+class GpsIntentService : IntentService("GpsIntentService") {
     private val TAG = "GpSIntentService"
-    var locationPos: LocationBft? = null
+    var locationPos: LocationGps? = null
+
+    private lateinit var nancy:NancyBftService
     private var permissions = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
     private lateinit var locationManager: LocationManager
     override fun onHandleIntent(intent: Intent?) {
+        nancy= NancyBftService()
         locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
         when (intent?.action) {
             ACTION_FOO -> {
@@ -51,7 +55,19 @@ class GpSIntentService : IntentService("GpSIntentService") {
 
         do {
             Thread.sleep(5000)
-            Log.i(TAG,"stared "+getLocation());
+
+
+            try {
+                val trackpoint:Trackpoint = Trackpoint("1","1,1","1",Date(),getLocation()!!,0 )
+                nancy.postTracker(trackpoint)
+                Log.i(TAG,"stared "+trackpoint)
+            }
+            catch (e:Exception){
+                Log.e(TAG,e.localizedMessage)
+            }
+           ;
+
+
         }while (true)
 
 
@@ -62,45 +78,22 @@ class GpSIntentService : IntentService("GpSIntentService") {
 
 
     @SuppressLint("MissingPermission")
-    private fun getPosition(provider:String): LocationBft? {
-
-        locationManager.requestLocationUpdates(provider, 5000, 0F, object :
-            LocationListener {
-            override fun onLocationChanged(location: Location?) {
-                if (location != null) {
-                    locationPos = LocationBft(location?.longitude.toString(),location?.latitude.toString(),location?.altitude.toString(),
-                        Date().toString(),getDeviceName(),"111",location.accuracy)
-                    Log.i(TAG,"stared "+locationPos);
-                }
-            }
-            override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {
-                Log.i(TAG,"stared "+status);
-            }
-            override fun onProviderEnabled(provider: String?) {
-                Log.i(TAG,"stared onProviderEnabled");
-            }
-            override fun onProviderDisabled(provider: String?) {
-                Log.i(TAG,"stared onProviderDisabled");
-            }
-
-        }
-
-        )
+    private fun getPosition(provider:String): LocationGps? {
 
         val localGpsLocation = locationManager.getLastKnownLocation(provider)
         if (localGpsLocation != null)
-            return LocationBft(localGpsLocation?.longitude.toString(),localGpsLocation?.latitude.toString(),localGpsLocation?.altitude.toString(),
-                Date().toString(),getDeviceName(),"111",localGpsLocation.accuracy)
+            return LocationGps("1",localGpsLocation?.longitude,localGpsLocation?.latitude,localGpsLocation?.altitude,
+                Date(),localGpsLocation?.speed,localGpsLocation.accuracy)
         else
             return locationPos
     }
 
 
     @SuppressLint("MissingPermission")
-    private fun getLocation(): LocationBft? {
-        var locationGps: LocationBft? = null
-        var locationNetwork: LocationBft? = null
-        var location: LocationBft?=null
+    private fun getLocation(): LocationGps? {
+        var locationGps: LocationGps? = null
+        var locationNetwork: LocationGps? = null
+        var location: LocationGps?=null
         var   hasGps = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)
         var  hasNetwork = locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)
 
@@ -150,6 +143,7 @@ class GpSIntentService : IntentService("GpSIntentService") {
     override fun onDestroy() {
         super.onDestroy()
 
+
     }
 
 
@@ -182,7 +176,7 @@ class GpSIntentService : IntentService("GpSIntentService") {
         // TODO: Customize helper method
         @JvmStatic
         fun startActionFoo(context: Context, param1: String, param2: String) {
-            val intent = Intent(context, GpSIntentService::class.java).apply {
+            val intent = Intent(context, GpsIntentService::class.java).apply {
                 action = ACTION_FOO
                 putExtra(EXTRA_PARAM1, param1)
                 putExtra(EXTRA_PARAM2, param2)
@@ -199,7 +193,7 @@ class GpSIntentService : IntentService("GpSIntentService") {
         // TODO: Customize helper method
         @JvmStatic
         fun startActionBaz(context: Context, param1: String, param2: String) {
-            val intent = Intent(context, GpSIntentService::class.java).apply {
+            val intent = Intent(context, GpsIntentService::class.java).apply {
                 action = ACTION_BAZ
                 putExtra(EXTRA_PARAM1, param1)
                 putExtra(EXTRA_PARAM2, param2)
